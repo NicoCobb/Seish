@@ -38,9 +38,17 @@ function Player:update(dt)
 	-- handle movement:
 	local dx = boolVal[love.keyboard.isDown("d")] - boolVal[love.keyboard.isDown("a")]
 	local dy = boolVal[love.keyboard.isDown("s")] - boolVal[love.keyboard.isDown("w")]
-	self.x = self.x + dx * self.speed * dt -- make sure you use dt (delta time) to ensure you move the same
-	self.y = self.y + dy * self.speed * dt -- speed no matter the framerate
+	local dxAdjusted = dx
+	local dyAdjusted = dy
 
+	local magnitude = math.sqrt(dx^2 + dy^2)
+	if magnitude ~= 0 then
+		dxAdjusted = dx/magnitude
+		dyAdjusted = dy/magnitude
+	end
+
+	self.x = self.x + dxAdjusted * self.speed * dt -- make sure you use dt (delta time) to ensure you move the same
+	self.y = self.y + dyAdjusted * self.speed * dt -- speed no matter the framerate
 
 	-- then check if the player is attacking and attack!
 	local f = math.atan2(love.mouse.getY() - self.y, love.mouse.getX() - self.x) -- get the angle between the mouse and the player
