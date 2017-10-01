@@ -322,11 +322,6 @@ function loadRoom()
 		
 end
 
-
-function game:load()
-	loadRoom()
-end
-
 --Delete the room and load new room
 function exitRoom()
 
