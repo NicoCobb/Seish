@@ -13,16 +13,35 @@ Class = require "class"
 
 Bullet = Class()
 
-function Bullet:init(x, y, f, r, speed, color)
+function Bullet:init(x, y, f, charge, r, speed, color)
 	self.x = x
 	self.y = y
 	self.f = f
+	self.charge = charge
 
-	self.r = r or 10
-	self.speed = speed or 50
+	self.rMax = 30
+	self.rMin = 10
+	self.maxSpeed = speed or 5
+	self.minSpeed = 1
 	self.color = color or {255, 0, 0}
 	self.active = true
-	self.attack = 50 -- the amount of damage to do to an enemy.
+	self.maxAttack = 50 -- the fully charged damage to an enemy.
+	self.minAttack = 5
+
+	self.speed = self.maxSpeed * (1 - self.charge) -- set bullet speed
+	if self.speed < self.minSpeed then
+		self.speed = self.minSpeed
+	end
+
+	self.r = self.rMax * self.charge --set bullet size
+	if self.r < self.rMin then
+		self.r = self.rMin
+	end
+
+	self.attack = self.maxAttack * self.charge --set bullet attack value
+	if self.attack < self.minAttack then
+		self.attack = self.minAttack
+	end
 end
 
 function Bullet:update(dt)

@@ -16,6 +16,8 @@ Player = Class()
 function Player:init(health)
 	self.maxHealth = 100
 	self.health = self.maxHealth
+	self.maxSpeed = 200
+	self.minSpeed = 70
 	self.speed = 200
 	self.x = 0
 	self.y = 0
@@ -24,8 +26,10 @@ function Player:init(health)
 	self.width = 50
 	self.height = 100
 
-	self.gunCooldown = .1
-	self.gunTimer = 0
+	self.charge = 0 -- % charge when firing the bullet
+	self.chargeTime = 2 -- maximum charge time
+	self.chargeIncrease = 0 -- used to count how long the bullet is being charged for
+	self.maxHealthUsed = .1 -- amount of health that gets consumed on a max charge bullet
 end
 
 function Player:update(dt)
@@ -50,19 +54,16 @@ function Player:update(dt)
 	self.x = self.x + dxAdjusted * self.speed * dt -- make sure you use dt (delta time) to ensure you move the same
 	self.y = self.y + dyAdjusted * self.speed * dt -- speed no matter the framerate
 
-	-- then check if the player is attacking and attack!
-	local f = math.atan2(love.mouse.getY() - self.y, love.mouse.getX() - self.x) -- get the angle between the mouse and the player
-	if love.mouse.isDown(1) then
-		-- the left mouse button is down, fire bullets
-		if self.gunTimer <= 0 then
-			-- make a bullet
-			local b = Bullet(self.x, self.y, f)
-			addBullet(b) -- this is a function in the main file which just adds a bullet to the table
-			self.gunTimer = self.gunCooldown
+	-- build up charge on bullet
+	if love.mouse.isDown(1) then 
+		if self.chargeIncrease < self.chargeTime then --charge up the bullet as long as the mouse is held or to max
+			self.chargeIncrease = self.chargeIncrease + dt
 		end
-	end
-	if self.gunTimer > 0 then
-		self.gunTimer = self.gunTimer - dt
+
+		self.speed = self.speed * .98
+		if self.speed < self.minSpeed then
+			self.speed = self.minSpeed
+		end
 	end
 end
 
