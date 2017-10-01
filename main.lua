@@ -29,6 +29,8 @@ player = Player()
 enemies = {}
 bullets = {}
 enemy_bullets = {}
+objects = {}
+text = {}
 
 function love.load(args)
 	-- this function is run once when the game is launched, it's a good place to initialize your variables and
@@ -44,9 +46,20 @@ function love.load(args)
 
 	--create border
 	borderTop    = HC.rectangle(0,-100, 1200,100)
+	borderTop.colType = "object"
+	table.insert(objects, borderTop)
     borderBottom = HC.rectangle(0,800, 1200,100)
-    goalLeft     = HC.rectangle(-100,0, 100,800)
-    goalRight    = HC.rectangle(1200,0, 100,800)
+    borderBottom.colType = "object"
+    table.insert(objects, borderBottom)
+    boarderLeft     = HC.rectangle(-100,0, 100,800)
+    boarderLeft.colType = "object"
+    table.insert(objects, borderLeft)
+    boarderRight    = HC.rectangle(1200,0, 100,800)
+    boarderRight.colType = "object"
+    table.insert(objects, borderRight)
+    bigWall 	= HC.rectangle(600, 0, 50, 800)
+    bigWall.colType = "object"
+    table.insert(objects, bigWall)
 end
 
 function love.update(dt)
@@ -58,6 +71,7 @@ function love.update(dt)
 		-- if there are no enemies left, then count down the time until the next wave
 		waveCountdown = waveCountdown - dt
 	end
+
 	if waveCountdown <= 0 then
 		-- if it's time for the next wave, then update the wave number and spawn the enemies
 		waveNumber = waveNumber + 1 -- it's the next wave
@@ -76,15 +90,43 @@ function love.update(dt)
 	end
 
 	-- check collisions for player
-	local collisions = HC.collisions(player.collider)
-    for other, separating_vector in pairs(collisions) do
-    	--set player.x and player.y to counteract the wall... but how?
-    	if other == 
-    	player.x = player.x + separating_vector.x
-    	player.y = player.y + separating_vector.y
+	local playerCollisions = HC.collisions(player.collider)
+    for other, separating_vector in pairs(playerCollisions) do
 
+    	if other.colType == "object" then
+    		player.x = player.x + separating_vector.x
+    		player.y = player.y + separating_vector.y
+    	elseif other.colType == "enemyBullet" then
+    		player.health = player.health - other.parent.attack
+    		other.parent.active = false
+    	elseif other.colType == "enemy" then
+    		player.health = player.health - other.parent.attack
+    		other.parent.health = 0
+    	end
     end
 
+    -- check for if bullets collide with objects and deactivate
+    for i = #objects, 1, -1 do
+    	local objectCollisions = HC.collisions(objects[i])
+    	for other, separating_vector in pairs(objectCollisions) do
+
+    		if other.colType == "enemyBullet" or other.colType == "playerBullet" then
+    			other.parent.active = false
+    		end
+    	end
+    end
+
+    -- check for if bullets hit enemies and damage + deactivate bullet
+    for i = #enemies, 1, -1 do
+    	local enemyCollisions = HC.collisions(enemies[i].collider)
+    	for other, separating_vector in pairs(enemyCollisions) do
+
+    		if other.colType == "playerBullet" then
+    			enemies[i].health = enemies[i].health - other.parent.attack
+    			other.parent.active = false
+    		end
+    	end
+    end
 
 	-- update the player, enemies and bullets
 	-- if the enemies are dead or the bullets hit something then remove them from the tables
@@ -96,12 +138,10 @@ function love.update(dt)
 			table.remove(enemies, i) -- remove dead enemies
 		end
 	end
+
 	for i = #bullets, 1, -1 do
 		bullets[i]:update(dt)
-		for k, enemy in ipairs(enemies) do
-			-- we have to check each bullet to see if it collided with an enemy
-			bullets[i]:checkEnemyCollision(enemy)
-		end
+
 		if not bullets[i].active then
 			table.remove(bullets, i) -- remove finished bullets
 		end
@@ -109,7 +149,7 @@ function love.update(dt)
 	
 	for i = #enemy_bullets, 1, -1 do
 		enemy_bullets[i]:update(dt)
-		enemy_bullets[i]:checkEnemyCollision(player)
+
 		if not enemy_bullets[i].active then
 			table.remove(enemy_bullets, i)
 		end
@@ -151,6 +191,12 @@ function love.draw()
 	love.graphics.printf("Wave: "..waveNumber, 20, 20, 200)
 	love.graphics.printf("Best: "..maxWaveNumber, 220, 20, 200)
 	love.graphics.printf("Enemies left: "..#enemies, 420, 20, 200)
+
+	-- print messages
+    for i = 1,#text do
+        love.graphics.setColor(255,255,255, 255 - (i-1) * 6)
+        love.graphics.print(text[#text - (i-1)], 10, i * 15)
+    end
 end
 
 function love.keypressed(key, unicode)
@@ -184,16 +230,4 @@ end
 
 function addEnemyBullet(b)
 	table.insert(enemy_bullets, b)
-end
-
-function rectangleCollisionCheck(x1, y1, w1, h1, x2, y2, w2, h2)
-	-- a general rectangle collision check:
-	-- returns whether the two rectangles are touching
-	-- the x and y coordinates in this case are the centers of the rectangles
-	if x1 + w1/2 > x2 - w2/2 and x1 - w1/2 < x2 + w2/2 then
-		if y1 + h1/2 > y2 - h2/2 and y1 - h1/2 < y2 + h2/2 then
-			return true -- they're colliding
-		end
-	end
-	return false
 end

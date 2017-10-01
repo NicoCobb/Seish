@@ -10,10 +10,12 @@ Make enemies that fire bullets at the player!
 ]]--
 
 Class = require "class"
+require "ColliderType"
 
-Bullet = Class()
+Bullet = Class{__includes = ColliderType}
 
 function Bullet:init(x, y, f, charge, r, speed, color)
+	ColliderType.init(self, "playerBullet")
 	self.x = x
 	self.y = y
 	self.f = f
@@ -21,8 +23,8 @@ function Bullet:init(x, y, f, charge, r, speed, color)
 
 	self.rMax = 30
 	self.rMin = 10
-	self.maxSpeed = speed or 5
-	self.minSpeed = 1
+	self.maxSpeed = speed or 50
+	self.minSpeed = 10
 	self.color = color or {255, 0, 0}
 	self.active = true
 	self.maxAttack = 50 -- the fully charged damage to an enemy.
@@ -42,11 +44,19 @@ function Bullet:init(x, y, f, charge, r, speed, color)
 	if self.attack < self.minAttack then
 		self.attack = self.minAttack
 	end
+
+	self.collider = HC.circle(0, 0, 30)
+	self.collider:moveTo(self.x, self.y)
+	self.collider.colType = "playerBullet"
+	self.collider.parent = self
 end
 
 function Bullet:update(dt)
 	self.x = self.x + math.cos(self.f)*self.speed
 	self.y = self.y + math.sin(self.f)*self.speed
+
+	self.collider:moveTo(self.x, self.y)
+
 	if self.x > love.graphics.getWidth() + self.r or self.x < -self.r then
 		-- it's off screen, kill it!
 		self.active = false
@@ -58,16 +68,4 @@ end
 function Bullet:draw()
 	love.graphics.setColor(self.color)
 	love.graphics.ellipse("fill", self.x, self.y, self.r, self.r)
-end
-
-function Bullet:checkEnemyCollision(enemy)
-	-- pass in an enemy and handle it if it collides
-	if self.active then
-		-- it may not be active because it may have hit another enemy earlier in the loop
-		if rectangleCollisionCheck(enemy.x, enemy.y, enemy.width, enemy.height, self.x, self.y, 2*self.r, 2*self.r) then
-			-- that isn't a good way to do circle/rectangle collision, but it works for our purposes
-			enemy.health = math.max(0, enemy.health - self.attack)
-			self.active = false
-		end
-	end
 end

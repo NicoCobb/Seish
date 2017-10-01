@@ -9,11 +9,13 @@ Some things you may want to try fixing:
 
 Class = require "class"
 require "bullet"
+require "colliderType"
 
-Player = Class()
+Player = Class{__includes = ColliderType}
 
 
 function Player:init(health)
+	ColliderType.init(self, "player")
 	self.maxHealth = 100
 	self.health = self.maxHealth
 	self.maxSpeed = 200
@@ -33,6 +35,8 @@ function Player:init(health)
 
 	self.collider = HC.rectangle(0, 0, 75, 50)
 	self.collider:moveTo(self.x, self.y)
+	self.collider.colType = "player"
+	self.collider.parent = self
 end
 
 function Player:update(dt)
