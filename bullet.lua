@@ -21,8 +21,8 @@ function Bullet:init(x, y, f, charge, r, speed, color)
 
 	self.rMax = 30
 	self.rMin = 10
-	self.maxSpeed = speed or 5
-	self.minSpeed = 1
+	self.maxSpeed = speed or 50
+	self.minSpeed = 10
 	self.color = color or {255, 0, 0}
 	self.active = true
 	self.maxAttack = 50 -- the fully charged damage to an enemy.
