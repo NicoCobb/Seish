@@ -9,8 +9,8 @@ require "enemy"
 Pepper = Class{__includes = Enemy}
 
 function Pepper:init(x, y, target)
-	self.x = 1000
-	self.y = 600
+	self.x = x
+	self.y = y
 	self.target = target
 	self.width = 50
 	self.height = 100
