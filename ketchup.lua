@@ -12,8 +12,8 @@ Ketchup = Class{__includes = {Enemy, ColliderType}}
 
 function Ketchup:init(x, y, target)
 	ColliderType.init(self, "enemy")
-	self.x = 1000
-	self.y = 600
+	self.x = x
+	self.y = y
 	self.target = target
 	self.health = 75
 	self.height = 100
