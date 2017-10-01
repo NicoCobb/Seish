@@ -19,17 +19,20 @@ function Player:init(health)
 	self.maxSpeed = 200
 	self.minSpeed = 70
 	self.speed = 200
-	self.x = 0
-	self.y = 0
+	self.x = 200
+	self.y = 200
 
 	self.color = {200, 255, 100, 255} -- if you don't have the fourth number it defaults to 255 alpha
-	self.width = 50
-	self.height = 100
+	self.width = 75
+	self.height = 50
 
 	self.charge = 0 -- % charge when firing the bullet
 	self.chargeTime = 2 -- maximum charge time
 	self.chargeIncrease = 0 -- used to count how long the bullet is being charged for
 	self.maxHealthUsed = .1 -- amount of health that gets consumed on a max charge bullet
+
+	self.collider = HC.rectangle(0, 0, 75, 50)
+	self.collider:moveTo(self.x, self.y)
 end
 
 function Player:update(dt)
@@ -38,6 +41,8 @@ function Player:update(dt)
 	-- for strings you could just type them in there like t = { hello = 5 }, but if you wanted it to start with a
 	-- control character you may have to do the following: t = { [.weird] = false }
 
+	-- move collider
+	self.collider:moveTo(self.x, self.y)
 
 	-- handle movement:
 	local dx = boolVal[love.keyboard.isDown("d")] - boolVal[love.keyboard.isDown("a")]

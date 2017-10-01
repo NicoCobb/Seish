@@ -17,11 +17,13 @@ require "player"
 require "salt"
 require "pepper"
 require "ketchup"
+HC = require "HC"
 
 timeBetweenWaves = 5
 waveCountdown = timeBetweenWaves
 waveNumber = 0
 maxWaveNumber = 0
+kitchen = love.graphics.newImage("art_assets/Kitchen.png")
 
 player = Player()
 enemies = {}
@@ -32,9 +34,19 @@ function love.load(args)
 	-- this function is run once when the game is launched, it's a good place to initialize your variables and
 	-- load things like images or sounds
 	love.window.setTitle("seish") -- name it whatever you want
-	love.window.setFullscreen( true, "desktop" 
-	love.graphics.setBackgroundColor(50, 50, 50) -- sets the background color to be a uniform gray.
+	love.window.setMode(1200,800)
+
+	--love.graphics.draw( drawable, x, y, r, sx, sy, ox, oy, kx, ky )
+	kHeight = kitchen:getHeight()
+	kWidth = kitchen:getWidth()
+	love.graphics.draw( kitchen, 0, 0, 0, 1, 1)
 	-- Colors are represented by 0-255 values for red, green, blue and sometimes alpha
+
+	--create border
+	borderTop    = HC.rectangle(0,-100, 1200,100)
+    borderBottom = HC.rectangle(0,800, 1200,100)
+    goalLeft     = HC.rectangle(-100,0, 100,800)
+    goalRight    = HC.rectangle(1200,0, 100,800)
 end
 
 function love.update(dt)
@@ -62,6 +74,17 @@ function love.update(dt)
 			table.insert(enemies, Ketchup(x, y, player))
 		end
 	end
+
+	-- check collisions for player
+	local collisions = HC.collisions(player.collider)
+    for other, separating_vector in pairs(collisions) do
+    	--set player.x and player.y to counteract the wall... but how?
+    	if other == 
+    	player.x = player.x + separating_vector.x
+    	player.y = player.y + separating_vector.y
+
+    end
+
 
 	-- update the player, enemies and bullets
 	-- if the enemies are dead or the bullets hit something then remove them from the tables
@@ -107,6 +130,10 @@ function love.draw()
 	-- this function is what is called to draw things to screen
 	-- most of the calculations should have been done in love.update(dt), so this should be relatively quick to call
 
+	--draw the background
+	love.graphics.setColor(255,255,255)
+	love.graphics.draw( kitchen, 0, 0, 0, 1, 1)
+
 	-- draw the player, and draw all of the bullets and enemies
 	player:draw()
 	for k, v in ipairs(enemies) do
@@ -119,7 +146,8 @@ function love.draw()
 		v:draw()
 	end
 	-- then draw the HUD info
-	love.graphics.setColor(255, 255, 255)
+
+	love.graphics.setColor(255,255,255)
 	love.graphics.printf("Wave: "..waveNumber, 20, 20, 200)
 	love.graphics.printf("Best: "..maxWaveNumber, 220, 20, 200)
 	love.graphics.printf("Enemies left: "..#enemies, 420, 20, 200)
@@ -147,7 +175,6 @@ function love.mousereleased( x, y, button, istouch )
 
 	player.chargeIncrease = 0
 	player.speed = player.maxSpeed
-
 end
 
 function addBullet(b)

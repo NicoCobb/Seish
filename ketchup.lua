@@ -17,6 +17,7 @@ function Ketchup:init(x, y, target)
 	self.height = 100
 	self.width = 50
 	self.color = {225, 30, 0}
+	self.attack = 0
 		
 	self.cooldown = .3
 end
