@@ -14,7 +14,7 @@ to handle everything it needs to do.
 
 
 require "player"
-require "enemy"
+require "salt"
 
 timeBetweenWaves = 5
 waveCountdown = timeBetweenWaves
@@ -57,7 +57,7 @@ function love.update(dt)
 			local r = love.graphics.getWidth() + .25*love.graphics.getWidth()*math.random()
 			local x = math.cos(f) * r + love.graphics.getWidth()/2
 			local y = math.sin(f) * r + love.graphics.getHeight()/2
-			table.insert(enemies, Enemy(x, y, player))
+			table.insert(enemies, Salt(x, y, player))
 		end
 	end
 
@@ -118,6 +118,22 @@ function love.keypressed(key, unicode)
 	if key == "escape" then
 		love.event.quit()
 	end
+end
+
+function love.mousereleased( x, y, button, istouch )
+	player.charge = player.chargeIncrease / player.chargeTime --charge % calculation
+
+	local f = math.atan2(love.mouse.getY() - player.y, love.mouse.getX() - player.x) -- get the angle between the mouse and the player
+	local b = Bullet(player.x, player.y, f, player.charge)
+
+	addBullet(b)
+
+
+	player.health = player.health - (player.charge * player.maxHealth * player.maxHealthUsed) --health is also ammo
+
+	player.chargeIncrease = 0
+	player.speed = player.maxSpeed
+
 end
 
 function addBullet(b)
