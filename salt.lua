@@ -6,7 +6,7 @@
 Class = require "class"
 require "enemy"
 
-Salt = Class{__includes = enemy}
+Salt = Class{__includes = Enemy}
 
 --Initialize salt enemy, just moves at the player
 function Salt:init(x, y, target)
@@ -19,12 +19,5 @@ function Salt:init(x, y, target)
 	self.health = 100
 	self.attack = 25
 	self.speed = 150
-	end
-
-function Salt:update(dt)
-	local f = math.atan2(self.target.y - self.y, self.target.x - self.x)
-	self.x = self.x + math.cos(f)*self.speed * dt
-	self.y = self.y + math.sin(f)*self.speed * dt
-	self:checkCollideWithTarget()
 	end
 	

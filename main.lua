@@ -14,7 +14,7 @@ to handle everything it needs to do.
 
 
 require "player"
-require "enemy"
+require "salt"
 
 timeBetweenWaves = 5
 waveCountdown = timeBetweenWaves
@@ -57,7 +57,7 @@ function love.update(dt)
 			local r = love.graphics.getWidth() + .25*love.graphics.getWidth()*math.random()
 			local x = math.cos(f) * r + love.graphics.getWidth()/2
 			local y = math.sin(f) * r + love.graphics.getHeight()/2
-			table.insert(enemies, Enemy(x, y, player))
+			table.insert(enemies, Salt(x, y, player))
 		end
 	end
 
