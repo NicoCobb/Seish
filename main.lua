@@ -32,19 +32,14 @@ function love.load(args)
 	-- this function is run once when the game is launched, it's a good place to initialize your variables and
 	-- load things like images or sounds
 	love.window.setTitle("seish") -- name it whatever you want
-	love.window.setMode(1200, 800) -- you may have to adjust this to the resolution you want, I literally just chose random numbers
+	love.window.setFullscreen( true, "desktop" )
 	love.graphics.setBackgroundColor(50, 50, 50) -- sets the background color to be a uniform gray.
-	camera = Camera(player.x, player.y) -- Adds camera at player position
-	camera:zoom(.5) --Scales everything to 1/2 size
 	-- Colors are represented by 0-255 values for red, green, blue and sometimes alpha
 end
 
 function love.update(dt)
 	-- this function is run up to 60 fps and is used to handle all of the heavy lifting of the game
 	-- the dt passed in is the delta time, which is the time since this function was last called, (use it for physics steps!)
-	
-	--update camera position
-	camera:lookAt(player.x, player.y)
 
 	-- update the wave of zombies:
 	if #enemies == 0 then
