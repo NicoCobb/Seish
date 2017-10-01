@@ -36,7 +36,7 @@ function Player:init(health)
 	self.maxHealthUsed = .1 -- amount of health that gets consumed on a max charge bullet
 
 	self.collider = HC.rectangle(0, 0, 75, 50)
-	self.collider:moveTo(self.x, self.y)
+	self.collider:moveTo(self.x + self.x/2, self.y + self.y/2)
 	self.collider.colType = "player"
 	self.collider.parent = self
 end
@@ -54,7 +54,7 @@ function Player:update(dt)
 	end
 
 	-- move collider
-	self.collider:moveTo(self.x, self.y)
+	self.collider:moveTo(self.x + self.width/2, self.y + self.height/2)
 
 	-- handle movement:
 	local dx = boolVal[love.keyboard.isDown("d")] - boolVal[love.keyboard.isDown("a")]
@@ -87,6 +87,7 @@ end
 function Player:draw()
 	local spriteNum = math.floor(self.animation.currentTime / self.animation.duration * #self.animation.quads) + 1
 	love.graphics.draw(self.animation.spriteSheet, self.animation.quads[spriteNum], self.x, self.y)
+	self.collider:draw(fill)
 end
 --[[
 function Player:draw()

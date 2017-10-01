@@ -27,7 +27,7 @@ function Enemy:init(x, y, target)
 end
 
 function Enemy:update(dt)
-	self.collider:moveTo(self.x, self.y)
+	self.collider:moveTo(self.x + self.width/2, self.y + self.height/2)
 
 	local f = math.atan2(self.target.y - self.y, self.target.x - self.x)
 	self.x = self.x + math.cos(f)*self.speed * dt

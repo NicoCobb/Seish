@@ -26,7 +26,7 @@ function Ketchup:init(x, y, target)
 	self.cooldown = .3
 
 	self.collider = HC.rectangle(0, 0, 50, 75)
-	self.collider:moveTo(self.x, self.y)
+	self.collider:moveTo(self.x + self.width/2, self.y + self.height/2)
 	self.collider.colType = "enemy"
 	self.collider.parent = self
 end
@@ -40,7 +40,7 @@ function Ketchup:update(dt)
 	
 	self.cooldown = self.cooldown - dt
 	
-	self.collider:moveTo(self.x, self.y)
+	self.collider:moveTo(self.x + self.width/2, self.y + self.height/2)
 	--Loads enemy bullet aimed at the player
 	local f = math.atan2(self.target.y - self.y, self.target.x - self.x)
 	if self.cooldown <= 0 then

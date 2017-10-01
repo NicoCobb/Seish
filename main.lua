@@ -43,7 +43,7 @@ function newAnimation(image, width, height, duration, extra)
     return animation
 end
 
-roomNumber = math.random(3, 5)
+numRooms = math.random(3, 5)
 roomCount = 0
 
 local menu = {}
@@ -58,7 +58,7 @@ bullets = {}
 enemy_bullets = {}
 objects = {}
 text = {}
-backgrounds = {love.graphics.newImage("art_assets/StartScreen.png"), love.graphics.newImage("art_assets/Kitchen.png"),
+backgrounds = {love.graphics.newImage("art_assets/StartScreen1.png"), love.graphics.newImage("art_assets/Kitchen.png"),
 			   love.graphics.newImage("art_assets/Room.png")--[[,  love.graphics.newImage("art_assets/Bedroom1.png"),
 			   love.graphics.newImage("art_assets/Bedroom2.png")--]] } 
 
@@ -132,12 +132,12 @@ function love.load(args)
 end
 
 function menu:enter()
-	love.graphics.print("Press Enter to continue", 20, 20)
+	love.graphics.draw(backgrounds[1])
 end
 
 function menu:keyreleased(key, code)
     if key == 'return' then
-        Gamestate.switch(game)
+        Gamestate.switch(intro)
     end
 end
 
@@ -160,7 +160,16 @@ function intro:enter()
     boarderRight.colType = "object"
     table.insert(objects, borderRight)
 
+    introDoor = HC.rectangle(1100, 500, 30, 180)
+    introDoor:draw(fill)
+    introDoor.colType = "door"
+
 end
+
+function intro:draw()
+	love.graphics.draw(backgrounds[1])
+end
+
 
 function intro:update(dt)
 -- check collisions for player
@@ -176,6 +185,10 @@ function intro:update(dt)
     	elseif other.colType == "enemy" then
     		player.health = player.health - other.parent.attack
     		other.parent.health = 0
+    	elseif other.colType == "door" then
+    		player.x = 100
+    		player.y = 400
+    		Gamestate.switch(game)
     	end
     end
 
@@ -271,6 +284,7 @@ function intro:draw()
 
 	--draw the player
 	player:draw()
+	introDoor:draw(fill)
 end
 
 function game:draw()
@@ -309,7 +323,7 @@ function intro:mousereleased( x, y, button, istouch )
 	addBullet(b)
 
 
-	player.health = player.health - (player.charge * player.maxHealth * player.maxHealthUsed) --health is also ammo
+	-- player.health = player.health - (player.charge * player.maxHealth * player.maxHealthUsed) --health is also ammo
 
 	player.chargeIncrease = 0
 	player.speed = player.maxSpeed
@@ -410,27 +424,28 @@ end
 
 function loadRoom()
 
-	enemyRNG1 = math.random(1, 4) --number of enemies
-	objectRNG = math.random(0, 3) --number of randomly added 
+	enemyRNG1 = math.random(1, 6) --number of enemies
+	objectRNG = math.random(1, 3) --number of randomly added 
 	player.x = 100 --spawn at door
 	player.y = 400 
 	roomCount = roomCount + 1
 	
 	--Chooses the type and position of the objects
-	for n = objectRNG, 1 -1 do
+	for n = objectRNG, 1, -1 do
 		whichObject = math.random(1, 4)
 		if whichObject == 1 then
 			--Small table
-			love.graphics.draw("art_assets/LittleTable.png", math.random(100, 800), math.random(100, 450))
+
+			love.graphics.draw(love.graphics.newImage("art_assets/LittleTable.png"), math.random(100, 800), math.random(100, 450))
 		elseif whichObject == 2 then
 			--Chair
-			love.graphics.draw("art_assets/Chair.png", math.random(100, 800), math.random(100, 450))
+			love.graphics.draw(love.graphics.newImage("art_assets/Chair.png"), math.random(100, 800), math.random(100, 450))
 		elseif whichObject == 3 then
 			--Large table
-			love.graphics.draw("art_assets/LargeTable.png", math.random(100, 550), math.random(100, 400))
+			love.graphics.draw(love.graphics.newImage("art_assets/LargeTable.png"), math.random(100, 550), math.random(100, 400))
 		elseif whichObject == 4 then
 			--Couch
-			love.graphics.draw("art_assets/Couch.png", math.random(100, 550), math.random(100, 400))
+			love.graphics.draw(love.graphics.newImage("art_assets/Couch.png"), math.random(100, 550), math.random(100, 400))
 		end
 	end
 	
@@ -438,11 +453,11 @@ function loadRoom()
 	for n = enemyRNG1, 1, -1 do
 		whichEnemy = math.random(1, 3)
 		if whichEnemy == 1 then
-			table.insert(enemies, Salt(math.random(130, 800), math.random(0, 1200), player))
+			table.insert(enemies, Salt(math.random(130, 800), math.random(0, 1100), player))
 		elseif whichEnemy == 2 then
-			table.insert(enemies, Pepper(math.random(130, 800), math.random(0, 1200), player))
+			table.insert(enemies, Pepper(math.random(130, 800), math.random(0, 1100), player))
 		elseif whichEnemy == 3 then
-			table.insert(enemies, Ketchup(math.random(130, 800), math.random(0, 1200), player))
+			table.insert(enemies, Ketchup(math.random(130, 800), math.random(0, 1100), player))
 		end
 	end
 		
