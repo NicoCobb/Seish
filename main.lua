@@ -50,6 +50,7 @@ local menu = {}
 local intro = {}
 local game = {}
 local last = {}
+local endScreen = {}
 
 player = Player()
 enemies = {}
@@ -59,9 +60,13 @@ enemy_bullets = {}
 objects = {}
 text = {}
 backgrounds = {love.graphics.newImage("art_assets/StartScreen1.png"), love.graphics.newImage("art_assets/Kitchen.png"),
-			   love.graphics.newImage("art_assets/Room.png")--[[,  love.graphics.newImage("art_assets/Bedroom1.png"),
-			   love.graphics.newImage("art_assets/Bedroom2.png")--]] } 
+			   love.graphics.newImage("art_assets/Room.png"),  love.graphics.newImage("art_assets/SleepingDude.png"),
+			   love.graphics.newImage("art_assets/AwakeDude.png") } 
 
+sTable = false
+chair = false
+lTable = false
+couch = false
 
 --Generate a room of enemies and objects at random
 function loadRoom()
@@ -73,7 +78,7 @@ function loadRoom()
 	roomCount = roomCount + 1
 	
 	--Chooses the type and position of the objects
-	for n = objectRNG, 1 -1 do
+	for n = objectRNG, 1, -1 do
 		whichObject = math.random(1, 4)
 		if whichObject == 1 then
 			--Small table
@@ -94,11 +99,11 @@ function loadRoom()
 	for n = enemyRNG1, 1, -1 do
 		whichEnemy = math.random(1, 3)
 		if whichEnemy == 1 then
-			table.insert(enemies, Salt(math.random(0, 800), math.random(0, 1200), player))
+			table.insert(enemies, Salt(math.random(100, 800), math.random(0, 1100), player))
 		elseif whichEnemy == 2 then
-			table.insert(enemies, Pepper(math.random(0, 800), math.random(0, 1200), player))
+			table.insert(enemies, Pepper(math.random(100, 800), math.random(0, 1100), player))
 		elseif whichEnemy == 3 then
-			table.insert(enemies, Ketchup(math.random(0, 800), math.random(0, 1200), player))
+			table.insert(enemies, Ketchup(math.random(100, 800), math.random(0, 1100), player))
 		end
 	end
 		
@@ -166,7 +171,7 @@ function intro:enter()
 
 end
 
-function intro:draw()
+function menu:draw()
 	love.graphics.draw(backgrounds[1])
 end
 
@@ -311,6 +316,7 @@ function game:draw()
 
 	love.graphics.setColor(255,255,255)
 	love.graphics.printf("Enemies left: "..#enemies, 420, 20, 200)
+	love.graphics.printf("Health:" ..player.health, 550, 20, 200)
 
 end
 
@@ -329,13 +335,25 @@ function intro:mousereleased( x, y, button, istouch )
 	player.speed = player.maxSpeed
 end
 
+q = 2.1
+countdown = 1
+countdownCounter = 0
 function last:update(dt)
 	-- check collisions for player
 	local playerCollisions = HC.collisions(player.collider)
 	--Dude's position is not set
-	local dude = HC.rectangle(0, 0, 50, 75)
+	dude = HC.rectangle(600, 100, 560, 190)
 	dude.colType = "dude"
+	dude.animation = newAnimation(love.graphics.newImage("art_assets/DustCloud.png"), 1200, 800, 1)
+	
+	dude.animation.currentTime = dude.animation.currentTime + dt
+		if dude.animation.currentTime >= dude.animation.duration then
+			dude.animation.currentTime = dude.animation.currentTime - dude.animation.duration
+		end
+	
 	woke = false
+	ded = false
+	finish = false
 	
     for other, separating_vector in pairs(playerCollisions) do
 
@@ -350,8 +368,27 @@ function last:update(dt)
     		other.parent.health = 0
 		elseif other.colType == "dude" then
 			woke = true
+			ded = true
+			q = q - dt
+			if q <= .6 then
+				ded = true
+			end
+			if q <= 0 then
+				finish = true
+			end
     	end
+
+    	if woke then
+    		countdownCounter = countdownCounter + dt
+    	end
+
+    	if countdownCounter > countdown then
+    		Gamestate.switch(endScreen)
+    	end
+
     end
+	if finish then
+	end	
 
     player:update(dt)
 end
@@ -361,9 +398,28 @@ function last:draw()
 	love.graphics.setColor(255,255,255)
 	if not woke then
 		love.graphics.draw( backgrounds[4])
+--[[	elseif ded then
+		local spriteNum = math.floor(dude.animation.currentTime / dude.animation.duration * #dude.animation.quads) + 1
+		love.graphics.draw(dude.animation.spriteSheet, dude.animation.quads[spriteNum], 1200, 800) ]]--
 	elseif woke then
 		love.graphics.draw( backgrounds[5])
 	end
+
+	if sTable then
+		love.graphics.draw(love.graphics.newImage("art_assets/LittleTable.png"), sTx, sTy)
+	end
+
+	if lTable then
+		love.graphics.draw(love.graphics.newImage("art_assets/LargeTable.png"), lTx, lTy)
+	end
+
+	if chair then
+		love.graphics.draw(love.graphics.newImage("art_assets/LargeTable.png"), lTx, lTy)
+	end 
+
+	if couch then
+		love.graphics.draw(love.graphics.newImage("art_assets/Couch.png"), cOx, cOy)
+	end 
 	--draw the player
 	player:draw()
 end
@@ -422,9 +478,20 @@ function addEnemyBullet(b)
 	table.insert(enemy_bullets, b)
 end
 
+sTx = 0
+sTy = 0
+
+cHx = 0
+cHy = 0
+
+lTx = 0
+lTy = 0
+
+cOx = 0
+cOy = 0
 function loadRoom()
 
-	enemyRNG1 = math.random(1, 6) --number of enemies
+	enemyRNG1 = math.random(1, 5) --number of enemies
 	objectRNG = math.random(1, 3) --number of randomly added 
 	player.x = 100 --spawn at door
 	player.y = 400 
@@ -435,17 +502,28 @@ function loadRoom()
 		whichObject = math.random(1, 4)
 		if whichObject == 1 then
 			--Small table
-
-			love.graphics.draw(love.graphics.newImage("art_assets/LittleTable.png"), math.random(100, 800), math.random(100, 450))
+			sTable = true
+			sTx = math.random(100, 800)
+			sTy = math.random(100, 450)
+			love.graphics.draw(love.graphics.newImage("art_assets/LittleTable.png"), sTx, sTy)
 		elseif whichObject == 2 then
 			--Chair
-			love.graphics.draw(love.graphics.newImage("art_assets/Chair.png"), math.random(100, 800), math.random(100, 450))
+			chair = true
+			cHx = math.random(100, 800)
+			cHy = math.random(100, 450)
+			love.graphics.draw(love.graphics.newImage("art_assets/Chair.png"), cHx, cHy)
 		elseif whichObject == 3 then
 			--Large table
-			love.graphics.draw(love.graphics.newImage("art_assets/LargeTable.png"), math.random(100, 550), math.random(100, 400))
+			lTable = true
+			lTx = math.random(100, 550)
+			lTy = math.random(100, 400)
+			love.graphics.draw(love.graphics.newImage("art_assets/LargeTable.png"), lTx, lTy)
 		elseif whichObject == 4 then
 			--Couch
-			love.graphics.draw(love.graphics.newImage("art_assets/Couch.png"), math.random(100, 550), math.random(100, 400))
+			couch = true
+			cOx = math.random(100, 550)
+			cOy = math.random(100, 400)
+			love.graphics.draw(love.graphics.newImage("art_assets/Couch.png"), cOx, cOy)
 		end
 	end
 	
@@ -467,8 +545,23 @@ end
 function game:load()
 	doorRight = HC.rectangle(1050, 750, 20, 100)
 	doorRight.colType = "door"
+	doorRight:draw(fill)
 
 	loadRoom()
+end
+
+function endScreen:load()
+	love.graphics.draw(love.graphics.newImage("art_assets/End_Screen.png"))
+end
+
+function endScreen:draw()
+	love.graphics.draw(love.graphics.newImage("art_assets/End_Screen.png"))
+end
+
+function endScreen:keyreleased(key, code)
+    if key == 'return' then
+        Gamestate.switch(menu)
+    end
 end
 
 --Delete the room and load new room
@@ -486,9 +579,28 @@ function exitRoom()
 		table.remove(enemy_bullets, a)
 	end
 
+	sTx = 0
+	sTy = 0
+
+	cHx = 0
+	cHy = 0
+
+	lTx = 0
+	lTy = 0
+
+	cOx = 0
+	cOy = 0
+
+	sTable = false
+	chair = false
+	lTable = false
+	couch = false
+
 	if roomCount < numRooms then
 		loadRoom()
 	else
+		player.x = 100
+		player.y = 400
 		Gamestate.switch(last)
 	end
 end
