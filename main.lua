@@ -31,9 +31,10 @@ function newAnimation(image, width, height, duration, extra)
         end
     end
  
-	if extraQuad = 1 then
+	if extraQuad == 1 then
 		table.remove(animation.quads)
-    animation.duration = duration or 1
+    end
+	animation.duration = duration or 1
     animation.currentTime = 0
  
     return animation
