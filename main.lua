@@ -29,7 +29,7 @@ function love.load(args)
 	-- this function is run once when the game is launched, it's a good place to initialize your variables and
 	-- load things like images or sounds
 	love.window.setTitle("seish") -- name it whatever you want
-	love.window.setMode(1200, 800) -- you may have to adjust this to the resolution you want, I literally just chose random numbers
+	love.window.setFullscreen( true, "desktop" )
 	love.graphics.setBackgroundColor(50, 50, 50) -- sets the background color to be a uniform gray.
 	-- Colors are represented by 0-255 values for red, green, blue and sometimes alpha
 end
