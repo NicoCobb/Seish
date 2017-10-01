@@ -120,6 +120,22 @@ function love.keypressed(key, unicode)
 	end
 end
 
+function love.mousereleased( x, y, button, istouch )
+	player.charge = player.chargeIncrease / player.chargeTime --charge % calculation
+
+	local f = math.atan2(love.mouse.getY() - player.y, love.mouse.getX() - player.x) -- get the angle between the mouse and the player
+	local b = Bullet(player.x, player.y, f, player.charge)
+
+	addBullet(b)
+
+
+	player.health = player.health - (player.charge * player.maxHealth * player.maxHealthUsed) --health is also ammo
+
+	player.chargeIncrease = 0
+	player.speed = player.maxSpeed
+
+end
+
 function addBullet(b)
 	-- this function is used when the player fires a bullet to make it clearer what's happening
 	table.insert(bullets, b)
