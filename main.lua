@@ -13,18 +13,20 @@ to handle everything it needs to do.
 ]]--
 
 Camera = require "hump.camera"
+HC = require "HC"
+Gamestate = require "hump.gamestate"
 require "player"
 require "salt"
 require "pepper"
 require "ketchup"
-HC = require "HC"
+
 
 --This enables us to create animations from spritesheets
 function newAnimation(image, width, height, duration, extra)
     local extraQuad = extra or 0
 	local animation = {}
-    animation.spriteSheet = image;
-    animation.quads = {};
+    animation.spriteSheet = image
+    animation.quads = {}
  
     for y = 0, image:getHeight() - height, height do
         for x = 0, image:getWidth() - width, width do
@@ -41,11 +43,10 @@ function newAnimation(image, width, height, duration, extra)
     return animation
 end
 
-timeBetweenWaves = 5
-waveCountdown = timeBetweenWaves
-waveNumber = 0
-maxWaveNumber = 0
-kitchen = love.graphics.newImage("art_assets/Kitchen.png")
+local menu = {}
+local intro = {}
+local game = {}
+local last = {}
 
 player = Player()
 enemies = {}
@@ -53,64 +54,74 @@ bullets = {}
 enemy_bullets = {}
 objects = {}
 text = {}
+backgrounds = {love.graphics.newImage("art_assets/StartScreen.png"), love.graphics.newImage("art_assets/Kitchen.png"),
+			   love.graphics.newImage("art_assets/Room.png")}
+
 
 function love.load(args)
 	-- this function is run once when the game is launched, it's a good place to initialize your variables and
 	-- load things like images or sounds
-	love.window.setTitle("seish") -- name it whatever you want
-
+    love.window.setTitle("seish") -- name it whatever you want
 	love.window.setMode(1200,800)
 
-	--love.graphics.draw( drawable, x, y, r, sx, sy, ox, oy, kx, ky )
-	kHeight = kitchen:getHeight()
-	kWidth = kitchen:getWidth()
-	love.graphics.draw( kitchen, 0, 0, 0, 1, 1)
+	Gamestate.registerEvents()
+    Gamestate.switch(menu)
+end
+
+function menu:enter()
+	love.graphics.print("Press Enter to continue", 20, 20)
+end
+
+function menu:keyreleased(key, code)
+    if key == 'return' then
+        Gamestate.switch(game)
+    end
+end
+
+function intro:enter()
 
 	-- Colors are represented by 0-255 values for red, green, blue and sometimes alpha
+	love.graphics.draw(backgrounds[2])
 
 	--create border
-	borderTop    = HC.rectangle(0,-100, 1200,100)
+	borderTop    = HC.rectangle(0,-120, 1200,100)
 	borderTop.colType = "object"
 	table.insert(objects, borderTop)
-    borderBottom = HC.rectangle(0,800, 1200,100)
+    borderBottom = HC.rectangle(0,780, 1200,100)
     borderBottom.colType = "object"
     table.insert(objects, borderBottom)
-    boarderLeft     = HC.rectangle(-100,0, 100,800)
+    boarderLeft     = HC.rectangle(-130,0, 100,800)
     boarderLeft.colType = "object"
     table.insert(objects, borderLeft)
-    boarderRight    = HC.rectangle(1200,0, 100,800)
+    boarderRight    = HC.rectangle(1170,0, 100,800)
     boarderRight.colType = "object"
     table.insert(objects, borderRight)
 
 end
 
-function love.update(dt)
+function intro:update(dt)
+-- check collisions for player
+	local playerCollisions = HC.collisions(player.collider)
+    for other, separating_vector in pairs(playerCollisions) do
+
+    	if other.colType == "object" then
+    		player.x = player.x + separating_vector.x
+    		player.y = player.y + separating_vector.y
+    	elseif other.colType == "enemyBullet" then
+    		player.health = player.health - other.parent.attack
+    		other.parent.active = false
+    	elseif other.colType == "enemy" then
+    		player.health = player.health - other.parent.attack
+    		other.parent.health = 0
+    	end
+    end
+
+    player:update(dt)
+end
+
+function game:update(dt)
 	-- this function is run up to 60 fps and is used to handle all of the heavy lifting of the game
 	-- the dt passed in is the delta time, which is the time since this function was last called, (use it for physics steps!)
-	
-	-- update the wave of zombies:
-	if #enemies == 0 then
-		-- if there are no enemies left, then count down the time until the next wave
-		waveCountdown = waveCountdown - dt
-	end
-
-	if waveCountdown <= 0 then
-		-- if it's time for the next wave, then update the wave number and spawn the enemies
-		waveNumber = waveNumber + 1 -- it's the next wave
-		maxWaveNumber = math.max(waveNumber, maxWaveNumber) -- if the player has reached a new high-score, update it!
-		waveCountdown = timeBetweenWaves -- reset the timer until the next wave so that we're ready
-
-		-- spawn the enemies in a circle around the center of the screen
-		for i = 1, math.pow(2, waveNumber-1) do
-			-- spawn enemies for the wave randomly in a circle
-			local f = math.random() * 2 * math.pi
-			local r = love.graphics.getWidth() + .25*love.graphics.getWidth()*math.random()
-			local x = math.cos(f) * r + love.graphics.getWidth()/2
-			local y = math.sin(f) * r + love.graphics.getHeight()/2
-			table.insert(enemies, Ketchup(x, y, player))
-			table.insert(enemies, Pepper(600, 500, player))
-		end
-	end
 
 	-- check collisions for player
 	local playerCollisions = HC.collisions(player.collider)
@@ -183,22 +194,26 @@ function love.update(dt)
 
 	-- check if the player is dead, if so, reset everything:
 	if player.health <= 0 then
-		waveNumber = 0
-		waveCountdown = timeBetweenWaves
-		player.health = player.maxHealth
-		enemies = {}
-		bullets = {}
-		enemy_bullets = {}
+		Gamestate.switch(menu)
 	end
 end
 
-function love.draw()
+function intro:draw()
+	--draw the background
+	love.graphics.setColor(255,255,255)
+	love.graphics.draw( backgrounds[2])
+
+	--draw the player
+	player:draw()
+end
+
+function game:draw()
 	-- this function is what is called to draw things to screen
 	-- most of the calculations should have been done in love.update(dt), so this should be relatively quick to call
 
 	--draw the background
 	love.graphics.setColor(255,255,255)
-	love.graphics.draw( kitchen, 0, 0, 0, 1, 1)
+	love.graphics.draw( backgrounds[3])
 
 	-- draw the player, and draw all of the bullets and enemies
 	
@@ -215,27 +230,11 @@ function love.draw()
 	-- then draw the HUD info
 
 	love.graphics.setColor(255,255,255)
-	love.graphics.printf("Wave: "..waveNumber, 20, 20, 200)
-	love.graphics.printf("Best: "..maxWaveNumber, 220, 20, 200)
 	love.graphics.printf("Enemies left: "..#enemies, 420, 20, 200)
 
-	-- print messages
-    for i = 1,#text do
-        love.graphics.setColor(255,255,255, 255 - (i-1) * 6)
-        love.graphics.print(text[#text - (i-1)], 10, i * 15)
-    end
 end
 
-function love.keypressed(key, unicode)
-	-- this is called whenever a key is pressed, it passes in the key and its unicode value
-
-	-- if the escape key is pressed, quit the game
-	if key == "escape" then
-		love.event.quit()
-	end
-end
-
-function love.mousereleased( x, y, button, istouch )
+function intro:mousereleased( x, y, button, istouch )
 	player.charge = player.chargeIncrease / player.chargeTime --charge % calculation
 
 	local f = math.atan2(love.mouse.getY() - player.y, love.mouse.getX() - player.x) -- get the angle between the mouse and the player
@@ -250,6 +249,30 @@ function love.mousereleased( x, y, button, istouch )
 	player.speed = player.maxSpeed
 end
 
+function game:mousereleased( x, y, button, istouch )
+	player.charge = player.chargeIncrease / player.chargeTime --charge % calculation
+
+	local f = math.atan2(love.mouse.getY() - player.y, love.mouse.getX() - player.x) -- get the angle between the mouse and the player
+	local b = Bullet(player.x, player.y, f, player.charge)
+
+	addBullet(b)
+
+
+	player.health = player.health - (player.charge * player.maxHealth * player.maxHealthUsed) --health is also ammo
+
+	player.chargeIncrease = 0
+	player.speed = player.maxSpeed
+end
+
+function love.keypressed(key, unicode)
+	-- this is called whenever a key is pressed, it passes in the key and its unicode value
+
+	-- if the escape key is pressed, quit the game
+	if key == "escape" then
+		love.event.quit()
+	end
+end
+
 function addBullet(b)
 	-- this function is used when the player fires a bullet to make it clearer what's happening
 	table.insert(bullets, b)
@@ -258,3 +281,68 @@ end
 function addEnemyBullet(b)
 	table.insert(enemy_bullets, b)
 end
+
+function loadRoom()
+
+	enemyRNG1 = math.random(1, 4) --number of enemies
+	objectRNG = math.random(0, 3) --number of randomly added 
+	player.x = 100 --spawn at door
+	player.y = 400 
+	roomCount = roomCount + 1
+	
+	--Chooses the type and position of the objects
+	for n = objectRNG, 1 -1 do
+		whichObject = math.random(1, 4)
+		if whichObject == 1 then
+			--Small table
+			love.graphics.draw("art_assets/LittleTable.png", math.random(100, 800), math.random(100, 450)))
+		elseif whichObject == 2 then
+			--Chair
+			love.graphics.draw("art_assets/Chair.png", math.random(100, 800), math.random(100, 450)))
+		elseif whichObject == 3 then
+			--Large table
+			love.graphics.draw("art_assets/LargeTable.png", math.random(100, 550), math.random(100, 400)))
+		elseif whichObject == 4 then
+			--Couch
+			love.graphics.draw("art_assets/Couch.png", math.random(100, 550), math.random(100, 400)))
+		end
+	end
+	
+	--Decides which enemies to place and where
+	for n = enemyRNG1, 1, -1 do
+		whichEnemy = math.random(1, 3)
+		if whichEnemy == 1 then
+			table.insert(enemies, Salt(math.random(130, 800), math.random(0, 1200), player))
+		elseif whichEnemy == 2 then
+			table.insert(enemies, Pepper(math.random(130, 800), math.random(0, 1200), player))
+		elseif whichEnemy == 3 then
+			table.insert(enemies, Ketchup(math.random(130, 800), math.random(0, 1200), player))
+		end
+	end
+		
+end
+
+
+function game:load()
+	loadRoom()
+end
+
+--Delete the room and load new room
+function exitRoom()
+
+	for a = #roomObjects, 1, -1 do
+		table.remove(enemies, a)
+	end
+	for a = #bullets, 1, -1, do
+		table.remove(bullets, a)
+	end
+	for a = #enemy_bullets, 1, -1, do
+		table.remove(enemy_bullets, a)
+	end
+	if roomCount < numRooms
+		loadRoom()
+	else
+		Gamestate.switch(last)
+
+end
+
