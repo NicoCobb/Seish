@@ -9,28 +9,36 @@ Some things you may want to try fixing:
 
 Class = require "class"
 require "bullet"
+require "colliderType"
 
-Player = Class()
+Player = Class{__includes = ColliderType}
 
 
 function Player:init(health)
+	ColliderType.init(self, "player")
 	self.maxHealth = 100
 	self.health = self.maxHealth
 	self.maxSpeed = 200
 	self.minSpeed = 70
 	self.speed = 200
-	self.x = 0
-	self.y = 0
+	self.x = 200
+	self.y = 200
 
 	self.color = {200, 255, 100, 255} -- if you don't have the fourth number it defaults to 255 alpha
 	self.width = 75
 	self.height = 50
 	self.animation = newAnimation(love.graphics.newImage('art_assets/EggcelentSprite.png'), 90, 50, .75, 1)
 
+
 	self.charge = 0 -- % charge when firing the bullet
 	self.chargeTime = 2 -- maximum charge time
 	self.chargeIncrease = 0 -- used to count how long the bullet is being charged for
 	self.maxHealthUsed = .1 -- amount of health that gets consumed on a max charge bullet
+
+	self.collider = HC.rectangle(0, 0, 75, 50)
+	self.collider:moveTo(self.x, self.y)
+	self.collider.colType = "player"
+	self.collider.parent = self
 end
 
 function Player:update(dt)
@@ -44,6 +52,9 @@ function Player:update(dt)
 	if self.animation.currentTime >= self.animation.duration then
 		self.animation.currentTime = self.animation.currentTime - self.animation.duration
 	end
+
+	-- move collider
+	self.collider:moveTo(self.x, self.y)
 
 	-- handle movement:
 	local dx = boolVal[love.keyboard.isDown("d")] - boolVal[love.keyboard.isDown("a")]

@@ -5,10 +5,13 @@
 
 Class = require "class"
 require "enemy"
+require "colliderType"
 
-Pepper = Class{__includes = Enemy}
+Pepper = Class{__includes = {Enemy, ColliderType}}
 
 function Pepper:init(x, y, target)
+	ColliderType.init(self, "enemy")
+	self.colType = "enemy"
 	self.x = x
 	self.y = y
 	self.target = target
@@ -24,15 +27,20 @@ function Pepper:init(x, y, target)
 	self.rY = math.random(1, 360)
 	--How often it changes direction
 	self.moveCooldown = 1
+	self.collider = HC.rectangle(0, 0, 50, 100)
+	self.collider:moveTo(self.x, self.y)
+	self.collider.colType = "enemy"
+	self.collider.parent = self
 end
-	
-function Pepper:update(dt)
 
+function Pepper:update(dt)
 	self.animation.currentTime = self.animation.currentTime + dt
 	if self.animation.currentTime >= self.animation.duration then
 		self.animation.currentTime = self.animation.currentTime - self.animation.duration
 	end
-	
+
+	self.collider:moveTo(self.x, self.y)
+
 	--It moves in the predetermined random direction/speed
 	self.x = self.x + math.cos(math.rad(self.rX))*self.speed*dt
 	self.y = self.y + math.sin(math.rad(self.rY))*self.speed*dt
@@ -45,7 +53,6 @@ function Pepper:update(dt)
 	if self.moveCooldown > 0 then
 		self.moveCooldown = self.moveCooldown - dt
 	end
-	self:checkCollideWithTarget()
 end
 
 function Pepper:draw()

@@ -5,11 +5,14 @@
 
 Class = require "class"
 require "enemy"
+require "colliderType"
 
-Salt = Class{__includes = Enemy}
+Salt = Class{__includes = {Enemy, ColliderType}}
 
 --Initialize salt enemy, just moves at the player
 function Salt:init(x, y, target)
+	ColliderType.init(self, "enemy")
+	self.colType = "enemy"
 	self.target = target
 	self.x = x
 	self.y = y
@@ -20,6 +23,11 @@ function Salt:init(x, y, target)
 	self.attack = 25
 	self.speed = 100
 	self.animation = newAnimation(love.graphics.newImage('art_assets/AsaltinatorSprite.png'), 44, 75, .75, 2)
+
+	self.collider = HC.rectangle(0, 0, 50, 100)
+	self.collider:moveTo(self.x, self.y)
+	self.collider.colType = "enemy"
+	self.collider.parent = self
 end
 	
 function Salt:update(dt)

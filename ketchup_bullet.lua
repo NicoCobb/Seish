@@ -4,10 +4,12 @@
 --]]
 
 Class = require "class"
+require "ColliderType"
 
-Ketchup_bullet = Class()
+Ketchup_bullet = Class{__includes = ColliderType}
 
 function Ketchup_bullet:init(x, y, f, r, speed, color)
+	ColliderType.init(self, "enemyBullet")
 	self.x = x
 	self.y = y
 	self.f = f
@@ -18,6 +20,11 @@ function Ketchup_bullet:init(x, y, f, r, speed, color)
 	self.color = color or {255, 0, 0}
 	self.active = true
 	self.attack = 5 -- the amount of damage to do to an enemy.
+
+	self.collider = HC.circle(0, 0, 5)
+	self.collider:moveTo(self.x, self.y)
+	self.collider.colType = "enemyBullet"
+	self.collider.parent = self
 end
 
 function Ketchup_bullet:update(dt)
@@ -29,6 +36,9 @@ function Ketchup_bullet:update(dt)
 	
 	self.x = self.x + math.cos(self.f)*self.speed
 	self.y = self.y + math.sin(self.f)*self.speed
+
+	self.collider:moveTo(self.x, self.y)
+
 	if self.x > love.graphics.getWidth() + self.r or self.x < -self.r then
 		-- it's off screen, kill it!
 		self.active = false
@@ -40,16 +50,4 @@ end
 function Ketchup_bullet:draw()
 	local spriteNum = math.floor(self.animation.currentTime / self.animation.duration * #self.animation.quads) + 1
 	love.graphics.draw(self.animation.spriteSheet, self.animation.quads[spriteNum], self.x, self.y)	
-end
-
-function Ketchup_bullet:checkEnemyCollision(enemy)
-	-- pass in an enemy and handle it if it collides
-	if self.active then
-		-- it may not be active because it may have hit another enemy earlier in the loop
-		if rectangleCollisionCheck(enemy.x, enemy.y, enemy.width, enemy.height, self.x, self.y, 2*self.r, 2*self.r) then
-			-- that isn't a good way to do circle/rectangle collision, but it works for our purposes
-			enemy.health = math.max(0, enemy.health - self.attack)
-			self.active = false
-		end
-	end
 end
