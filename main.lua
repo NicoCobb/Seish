@@ -18,6 +18,28 @@ require "salt"
 require "pepper"
 require "ketchup"
 
+--This enables us to create animations from spritesheets
+function newAnimation(image, width, height, duration, extra)
+    local extraQuad = extra or 0
+	local animation = {}
+    animation.spriteSheet = image;
+    animation.quads = {};
+ 
+    for y = 0, image:getHeight() - height, height do
+        for x = 0, image:getWidth() - width, width do
+            table.insert(animation.quads, love.graphics.newQuad(x, y, width, height, image:getDimensions()))
+        end
+    end
+ 
+	for n = 0, extraQuad, 1 do
+		table.remove(animation.quads)
+    end
+	animation.duration = duration or 1
+    animation.currentTime = 0
+ 
+    return animation
+end
+
 timeBetweenWaves = 5
 waveCountdown = timeBetweenWaves
 waveNumber = 0
@@ -32,7 +54,7 @@ function love.load(args)
 	-- this function is run once when the game is launched, it's a good place to initialize your variables and
 	-- load things like images or sounds
 	love.window.setTitle("seish") -- name it whatever you want
-	love.window.setFullscreen( true, "desktop" )
+	love.window.setMode(1200, 800)
 	love.graphics.setBackgroundColor(50, 50, 50) -- sets the background color to be a uniform gray.
 	-- Colors are represented by 0-255 values for red, green, blue and sometimes alpha
 end
@@ -40,7 +62,7 @@ end
 function love.update(dt)
 	-- this function is run up to 60 fps and is used to handle all of the heavy lifting of the game
 	-- the dt passed in is the delta time, which is the time since this function was last called, (use it for physics steps!)
-
+	
 	-- update the wave of zombies:
 	if #enemies == 0 then
 		-- if there are no enemies left, then count down the time until the next wave
@@ -60,6 +82,7 @@ function love.update(dt)
 			local x = math.cos(f) * r + love.graphics.getWidth()/2
 			local y = math.sin(f) * r + love.graphics.getHeight()/2
 			table.insert(enemies, Ketchup(x, y, player))
+			table.insert(enemies, Pepper(600, 500, player))
 		end
 	end
 
@@ -108,6 +131,7 @@ function love.draw()
 	-- most of the calculations should have been done in love.update(dt), so this should be relatively quick to call
 
 	-- draw the player, and draw all of the bullets and enemies
+	
 	player:draw()
 	for k, v in ipairs(enemies) do
 		v:draw()

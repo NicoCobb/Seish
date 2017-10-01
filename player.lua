@@ -23,8 +23,9 @@ function Player:init(health)
 	self.y = 0
 
 	self.color = {200, 255, 100, 255} -- if you don't have the fourth number it defaults to 255 alpha
-	self.width = 50
-	self.height = 100
+	self.width = 75
+	self.height = 50
+	self.animation = newAnimation(love.graphics.newImage('art_assets/EggcelentSprite.png'), 90, 50, .75, 1)
 
 	self.charge = 0 -- % charge when firing the bullet
 	self.chargeTime = 2 -- maximum charge time
@@ -37,7 +38,12 @@ function Player:update(dt)
 	-- the square brackets around the boolean values signify that they are the keys
 	-- for strings you could just type them in there like t = { hello = 5 }, but if you wanted it to start with a
 	-- control character you may have to do the following: t = { [.weird] = false }
-
+	
+	-- handle animation
+	self.animation.currentTime = self.animation.currentTime + dt
+	if self.animation.currentTime >= self.animation.duration then
+		self.animation.currentTime = self.animation.currentTime - self.animation.duration
+	end
 
 	-- handle movement:
 	local dx = boolVal[love.keyboard.isDown("d")] - boolVal[love.keyboard.isDown("a")]
@@ -68,6 +74,11 @@ function Player:update(dt)
 end
 
 function Player:draw()
+	local spriteNum = math.floor(self.animation.currentTime / self.animation.duration * #self.animation.quads) + 1
+	love.graphics.draw(self.animation.spriteSheet, self.animation.quads[spriteNum], self.x, self.y)
+end
+--[[
+function Player:draw()
 	love.graphics.setColor(self.color)
 	love.graphics.rectangle("fill", self.x - self.width/2, self.y - self.height/2, self.width, self.height)
-end
+end--]]
