@@ -23,9 +23,9 @@ function Player:init(health)
 	self.y = 0
 
 	self.color = {200, 255, 100, 255} -- if you don't have the fourth number it defaults to 255 alpha
-	self.width = 50
+	self.width = 75
 	self.height = 50
-	self.animation = newAnimation(love.graphics.newImage('art_assets/EggcelentSprite.png'), 50, 50, .75)
+	self.animation = newAnimation(love.graphics.newImage('art_assets/EggcelentSprite.png'), 90, 50, .75, 1)
 
 	self.charge = 0 -- % charge when firing the bullet
 	self.chargeTime = 2 -- maximum charge time

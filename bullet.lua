@@ -19,11 +19,12 @@ function Bullet:init(x, y, f, charge, r, speed, color)
 	self.f = f
 	self.charge = charge
 
-	self.rMax = 30
-	self.rMin = 10
+	self.sMax = 1
+	self.sMin = .3
 	self.maxSpeed = speed or 50
 	self.minSpeed = 10
 	self.color = color or {255, 0, 0}
+	self.animation = newAnimation(love.graphics.newImage('art_assets/Projeggtile.png'), 40, 40, .5, 5)
 	self.active = true
 	self.maxAttack = 50 -- the fully charged damage to an enemy.
 	self.minAttack = 5
@@ -33,9 +34,10 @@ function Bullet:init(x, y, f, charge, r, speed, color)
 		self.speed = self.minSpeed
 	end
 
-	self.r = self.rMax * self.charge --set bullet size
-	if self.r < self.rMin then
-		self.r = self.rMin
+	self.scale = self.sMin
+	self.scale = self.charge --set bullet size
+	if self.scale < self.sMin then
+		self.scale = self.sMin
 	end
 
 	self.attack = self.maxAttack * self.charge --set bullet attack value
@@ -45,19 +47,25 @@ function Bullet:init(x, y, f, charge, r, speed, color)
 end
 
 function Bullet:update(dt)
+	
+	self.animation.currentTime = self.animation.currentTime + dt
+	if self.animation.currentTime >= self.animation.duration then
+		self.animation.currentTime = self.animation.currentTime - self.animation.duration
+	end
+	
 	self.x = self.x + math.cos(self.f)*self.speed
 	self.y = self.y + math.sin(self.f)*self.speed
-	if self.x > love.graphics.getWidth() + self.r or self.x < -self.r then
+	if self.x > love.graphics.getWidth()*self.scale or self.x < love.graphics.getWidth() then
 		-- it's off screen, kill it!
 		self.active = false
-	elseif self.y > love.graphics.getWidth() + self.r or self.y < -self.r then
+	elseif self.y > love.graphics.getWidth()*self.scale or self.y < love.graphics.getWidth() then
 		self.active = false
 	end
 end
 
 function Bullet:draw()
-	love.graphics.setColor(self.color)
-	love.graphics.ellipse("fill", self.x, self.y, self.r, self.r)
+	local spriteNum = math.floor(self.animation.currentTime / self.animation.duration * #self.animation.quads) + 1
+	love.graphics.draw(self.animation.spriteSheet, self.animation.quads[spriteNum])	
 end
 
 function Bullet:checkEnemyCollision(enemy)

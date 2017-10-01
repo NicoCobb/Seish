@@ -31,7 +31,7 @@ function newAnimation(image, width, height, duration, extra)
         end
     end
  
-	if extraQuad == 1 then
+	for n = 0, extraQuad, 1 do
 		table.remove(animation.quads)
     end
 	animation.duration = duration or 1
@@ -49,7 +49,6 @@ player = Player()
 enemies = {}
 bullets = {}
 enemy_bullets = {}
-sprites = {}
 
 function love.load(args)
 	-- this function is run once when the game is launched, it's a good place to initialize your variables and
@@ -83,6 +82,7 @@ function love.update(dt)
 			local x = math.cos(f) * r + love.graphics.getWidth()/2
 			local y = math.sin(f) * r + love.graphics.getHeight()/2
 			table.insert(enemies, Ketchup(x, y, player))
+			table.insert(enemies, Pepper(600, 500, player))
 		end
 	end
 

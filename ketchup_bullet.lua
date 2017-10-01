@@ -11,6 +11,7 @@ function Ketchup_bullet:init(x, y, f, r, speed, color)
 	self.x = x
 	self.y = y
 	self.f = f
+	self.animation = newAnimation(love.graphics.newImage('art_assets/KetchupBlobule.png'), 40, 40, .5, 5)
 
 	self.r = r or 10
 	self.speed = speed or 50
@@ -20,6 +21,12 @@ function Ketchup_bullet:init(x, y, f, r, speed, color)
 end
 
 function Ketchup_bullet:update(dt)
+
+	self.animation.currentTime = self.animation.currentTime + dt
+	if self.animation.currentTime >= self.animation.duration then
+		self.animation.currentTime = self.animation.currentTime - self.animation.duration
+	end
+	
 	self.x = self.x + math.cos(self.f)*self.speed
 	self.y = self.y + math.sin(self.f)*self.speed
 	if self.x > love.graphics.getWidth() + self.r or self.x < -self.r then
@@ -31,8 +38,8 @@ function Ketchup_bullet:update(dt)
 end
 
 function Ketchup_bullet:draw()
-	love.graphics.setColor(self.color)
-	love.graphics.ellipse("fill", self.x, self.y, self.r, self.r)
+	local spriteNum = math.floor(self.animation.currentTime / self.animation.duration * #self.animation.quads) + 1
+	love.graphics.draw(self.animation.spriteSheet, self.animation.quads[spriteNum], self.x, self.y)	
 end
 
 function Ketchup_bullet:checkEnemyCollision(enemy)

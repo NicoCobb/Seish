@@ -36,7 +36,7 @@ function newOddAnimation(image, width, height, duration)
 end
 
 function love.load()
-	animation = newOddAnimation(love.graphics.newImage('egg/EggcelentSprite.png'), 50, 50, .75)
+	animation = newOddAnimation(love.graphics.newImage('filename/file'), 50, 50, .75)
 end
 
 function love.update(dt)
