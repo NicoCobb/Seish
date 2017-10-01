@@ -12,9 +12,11 @@ wants to draw everything to the screen, when a key is pressed on the keyboard, e
 to handle everything it needs to do.
 ]]--
 
-
+Camera = require "hump.camera"
 require "player"
 require "salt"
+require "pepper"
+require "ketchup"
 
 timeBetweenWaves = 5
 waveCountdown = timeBetweenWaves
@@ -24,6 +26,7 @@ maxWaveNumber = 0
 player = Player()
 enemies = {}
 bullets = {}
+enemy_bullets = {}
 
 function love.load(args)
 	-- this function is run once when the game is launched, it's a good place to initialize your variables and
@@ -31,13 +34,17 @@ function love.load(args)
 	love.window.setTitle("seish") -- name it whatever you want
 	love.window.setMode(1200, 800) -- you may have to adjust this to the resolution you want, I literally just chose random numbers
 	love.graphics.setBackgroundColor(50, 50, 50) -- sets the background color to be a uniform gray.
+	camera = Camera(player.x, player.y) -- Adds camera at player position
+	camera:zoom(.5) --Scales everything to 1/2 size
 	-- Colors are represented by 0-255 values for red, green, blue and sometimes alpha
 end
 
 function love.update(dt)
 	-- this function is run up to 60 fps and is used to handle all of the heavy lifting of the game
 	-- the dt passed in is the delta time, which is the time since this function was last called, (use it for physics steps!)
-
+	
+	--update camera position
+	camera:lookAt(player.x, player.y)
 
 	-- update the wave of zombies:
 	if #enemies == 0 then
@@ -57,7 +64,7 @@ function love.update(dt)
 			local r = love.graphics.getWidth() + .25*love.graphics.getWidth()*math.random()
 			local x = math.cos(f) * r + love.graphics.getWidth()/2
 			local y = math.sin(f) * r + love.graphics.getHeight()/2
-			table.insert(enemies, Salt(x, y, player))
+			table.insert(enemies, Ketchup(x, y, player))
 		end
 	end
 
@@ -81,6 +88,14 @@ function love.update(dt)
 			table.remove(bullets, i) -- remove finished bullets
 		end
 	end
+	
+	for i = #enemy_bullets, 1, -1 do
+		enemy_bullets[i]:update(dt)
+		enemy_bullets[i]:checkEnemyCollision(player)
+		if not enemy_bullets[i].active then
+			table.remove(enemy_bullets, i)
+		end
+	end
 
 	-- check if the player is dead, if so, reset everything:
 	if player.health <= 0 then
@@ -89,6 +104,7 @@ function love.update(dt)
 		player.health = player.maxHealth
 		enemies = {}
 		bullets = {}
+		enemy_bullets = {}
 	end
 end
 
@@ -102,6 +118,9 @@ function love.draw()
 		v:draw()
 	end
 	for k, v in ipairs(bullets) do
+		v:draw()
+	end
+	for k, v in ipairs(enemy_bullets) do
 		v:draw()
 	end
 	-- then draw the HUD info
@@ -123,6 +142,10 @@ end
 function addBullet(b)
 	-- this function is used when the player fires a bullet to make it clearer what's happening
 	table.insert(bullets, b)
+end
+
+function addEnemyBullet(b)
+	table.insert(enemy_bullets, b)
 end
 
 function rectangleCollisionCheck(x1, y1, w1, h1, x2, y2, w2, h2)
