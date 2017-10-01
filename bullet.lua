@@ -39,6 +39,7 @@ function Bullet:init(x, y, f, charge, r, speed, color)
 	if self.scale < self.sMin then
 		self.scale = self.sMin
 	end
+	self.r = self.scale*20
 
 	self.attack = self.maxAttack * self.charge --set bullet attack value
 	if self.attack < self.minAttack then
@@ -55,17 +56,17 @@ function Bullet:update(dt)
 	
 	self.x = self.x + math.cos(self.f)*self.speed
 	self.y = self.y + math.sin(self.f)*self.speed
-	if self.x > love.graphics.getWidth()*self.scale or self.x < love.graphics.getWidth() then
+	if self.x > love.graphics.getWidth()+self.r or self.x < -self.r then
 		-- it's off screen, kill it!
 		self.active = false
-	elseif self.y > love.graphics.getWidth()*self.scale or self.y < love.graphics.getWidth() then
+	elseif self.y > love.graphics.getWidth()+self.r or self.y < -self.r then
 		self.active = false
 	end
 end
 
 function Bullet:draw()
 	local spriteNum = math.floor(self.animation.currentTime / self.animation.duration * #self.animation.quads) + 1
-	love.graphics.draw(self.animation.spriteSheet, self.animation.quads[spriteNum])	
+	love.graphics.draw(self.animation.spriteSheet, self.animation.quads[spriteNum], self.x, self.y, self.f, self.scale, self.scale)	
 end
 
 function Bullet:checkEnemyCollision(enemy)

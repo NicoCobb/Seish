@@ -17,7 +17,7 @@ function Ketchup:init(x, y, target)
 	self.height = 100
 	self.width = 66
 	self.color = {225, 30, 0}
-	self.attack = 0
+	self.attack = 10
 	
 	self.animation = newAnimation(love.graphics.newImage('art_assets/CatchUpBlobShot.png'), 66, 100, .4, 2)
 	self.cooldown = .3
