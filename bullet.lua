@@ -27,7 +27,7 @@ function Bullet:init(x, y, f, charge, r, speed, color)
 	self.maxSpeed = speed or 50
 	self.minSpeed = 10
 	self.color = color or {255, 0, 0}
-	self.animation = newAnimation(love.graphics.newImage('art_assets/Projeggtile.png'), 40, 40, .5, 5)
+	self.animation = newAnimation(love.graphics.newImage('art_assets/Projeggtile.png'), 60, 60, .5)
 	self.active = true
 	self.maxAttack = 50 -- the fully charged damage to an enemy.
 	self.minAttack = 5

@@ -81,9 +81,7 @@ function love.load(args)
     boarderRight    = HC.rectangle(1200,0, 100,800)
     boarderRight.colType = "object"
     table.insert(objects, borderRight)
-    bigWall 	= HC.rectangle(600, 0, 50, 800)
-    bigWall.colType = "object"
-    table.insert(objects, bigWall)
+
 end
 
 function love.update(dt)
@@ -137,6 +135,9 @@ function love.update(dt)
 
     		if other.colType == "enemyBullet" or other.colType == "playerBullet" then
     			other.parent.active = false
+    		elseif other.colType == "enemy" then
+    		other.parent.x = other.parent.x - separating_vector.x
+    		other.parent.y = other.parent.y - separating_vector.y
     		end
     	end
     end
