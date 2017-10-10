@@ -134,6 +134,9 @@ function love.load(args)
 
 	Gamestate.registerEvents()
     Gamestate.switch(menu)
+
+	bgm = love.audio.newSource("Sounds/Pop_Goes_The_Weasel_Main.wav", "stream")
+	love.audio.play(bgm)
 end
 
 function menu:enter()
